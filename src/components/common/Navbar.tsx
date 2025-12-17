@@ -1,35 +1,29 @@
 import { Link, NavLink } from "react-router-dom";
+import { useCartContext } from "../../context/CartContext";
 
 const Navbar = () => {
-  const linkClass = "text-sm font-medium text-gray-700 hover:text-black";
+  const { cart } = useCartContext();
+
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <nav className="border-b bg-white">
       <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
         <Link to="/" className="text-xl font-bold">
           QuickCart
         </Link>
 
-        {/* Links */}
         <div className="flex items-center gap-6">
-          <NavLink
-            to="/products"
-            className={({ isActive }) =>
-              isActive ? "font-semibold text-black" : linkClass
-            }
-          >
-            Products
-          </NavLink>
+          <NavLink to="/products">Products</NavLink>
 
-          <NavLink
-            to="/cart"
-            className={({ isActive }) =>
-              isActive ? "font-semibold text-black" : linkClass
-            }
-          >
+          <Link to="/cart" className="relative">
             Cart
-          </NavLink>
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-3 bg-black text-white text-xs px-2 py-0.5 rounded-full">
+                {totalItems}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
     </nav>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Product } from "../types/product";
-import { useCart } from "../hooks/useCart";
+import { useCartContext } from "../context/CartContext";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -10,7 +10,7 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const { addToCart } = useCart();
+  const { addToCart } = useCartContext();
 
   useEffect(() => {
     if (!id) return;

@@ -1,7 +1,7 @@
-import { useCart } from "../hooks/useCart";
+import { useCartContext } from "../context/CartContext";
 
 export default function Cart() {
-  const { cart, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { cart, removeFromCart, updateQuantity, totalPrice } = useCartContext();
 
   if (cart.length === 0) {
     return <p>Your cart is empty.</p>;
