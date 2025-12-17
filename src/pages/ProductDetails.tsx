@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Product } from "../types/product";
+import { useCart } from "../hooks/useCart";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -9,12 +10,23 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { addToCart } = useCart();
+
   useEffect(() => {
     if (!id) return;
 
+    setLoading(true);
+    setError("");
+    setProduct(null);
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`https://dummyjson.com/products/${id}`);
+        const res = await fetch(`https://dummyjson.com/products/${id}`, {
+          signal,
+        });
 
         if (!res.ok) {
           throw new Error("Product not found");
@@ -22,14 +34,21 @@ export default function ProductDetails() {
 
         const data: Product = await res.json();
         setProduct(data);
-      } catch (err) {
+        setLoading(false);
+      } catch (err: any) {
+        if (err.name === "AbortError") {
+          return;
+        }
         setError("Failed to load product");
-      } finally {
         setLoading(false);
       }
     };
 
     fetchProduct();
+
+    return () => {
+      controller.abort();
+    };
   }, [id]);
 
   if (loading) {
@@ -71,7 +90,10 @@ export default function ProductDetails() {
           {product.category && <p>Category: {product.category}</p>}
         </div>
 
-        <button className="mt-6 px-6 py-2 bg-black text-white rounded hover:bg-gray-700 cursor-pointer">
+        <button
+          onClick={() => addToCart(product)}
+          className="mt-6 px-6 py-2 bg-black text-white rounded hover:bg-gray-700"
+        >
           Add to Cart
         </button>
       </div>
