@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Product } from "../types/product";
 import { useCartContext } from "../context/CartContext";
+import ProductDetailsSkeleton from "../components/product/ProductDetailsSkeleton";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -52,7 +53,7 @@ export default function ProductDetails() {
   }, [id]);
 
   if (loading) {
-    return <p>Loading product...</p>;
+    return <ProductDetailsSkeleton />;
   }
 
   if (error) {
