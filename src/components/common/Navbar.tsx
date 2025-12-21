@@ -1,13 +1,16 @@
 import { Link, NavLink } from "react-router-dom";
 import { useCartContext } from "../../context/CartContext";
+import { useTheme } from "../../context/ThemeContext";
 
 const Navbar = () => {
   const { cart } = useCartContext();
 
+  const { theme, toggleTheme } = useTheme();
+
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <nav className="border-b bg-white">
+    <nav className="bg-white text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold">
           QuickCart
@@ -24,6 +27,12 @@ const Navbar = () => {
               </span>
             )}
           </Link>
+          <button
+            onClick={toggleTheme}
+            className="ml-4 px-3 py-1 rounded border text-sm dark:border-gray-600"
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
         </div>
       </div>
     </nav>
