@@ -65,7 +65,7 @@ IntersectionObserver API
 
 The app will be available at:
 
-http://localhost:5173
+https://shop-zen-ten.vercel.app/products
 
 📁 Project Structure (simplified)
 src/
@@ -79,7 +79,7 @@ src/
 ├── types/
 └── App.tsx
 
-📌 Future Improvements
+📌 #Future Improvements
 
 Category-based filtering
 
