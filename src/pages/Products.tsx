@@ -25,6 +25,7 @@ const Products = () => {
   const fetchProducts = useCallback(
     async (currentPage: number, searchTerm: string) => {
       if (loadingRef.current) return; // 👈 hard guard
+      loadingRef.current = true;
       try {
         setLoading(true);
         setError("");
@@ -80,19 +81,16 @@ const Products = () => {
 
   // IntersectionObserver setup
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingRef.current) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { rootMargin: "2px" }
-    );
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore && !loadingRef.current) {
+        setPage((prev) => prev + 1);
+      }
+    });
 
     if (loaderRef.current) observer.observe(loaderRef.current);
 
     return () => observer.disconnect();
-  }, [hasMore, loading]);
+  }, [hasMore]);
 
   return (
     <div>

@@ -79,7 +79,7 @@ src/
 ├── types/
 └── App.tsx
 
-📌 #Future Improvements
+📌 Future Improvements
 
 Category-based filtering
 
