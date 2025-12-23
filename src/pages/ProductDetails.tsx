@@ -6,12 +6,11 @@ import ProductDetailsSkeleton from "../components/product/ProductDetailsSkeleton
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
+  const { cart, addToCart } = useCartContext();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const { addToCart } = useCartContext();
 
   useEffect(() => {
     if (!id) return;
@@ -21,81 +20,90 @@ export default function ProductDetails() {
     setProduct(null);
 
     const controller = new AbortController();
-    const signal = controller.signal;
 
     const fetchProduct = async () => {
       try {
         const res = await fetch(`https://dummyjson.com/products/${id}`, {
-          signal,
+          signal: controller.signal,
         });
 
-        if (!res.ok) {
-          throw new Error("Product not found");
-        }
+        if (!res.ok) throw new Error("Product not found");
 
         const data: Product = await res.json();
         setProduct(data);
         setLoading(false);
       } catch (err: any) {
-        if (err.name === "AbortError") {
-          return;
+        if (err.name !== "AbortError") {
+          setError("Failed to load product");
+          setLoading(false);
         }
-        setError("Failed to load product");
-        setLoading(false);
       }
     };
 
     fetchProduct();
-
-    return () => {
-      controller.abort();
-    };
+    return () => controller.abort();
   }, [id]);
 
-  if (loading) {
-    return <ProductDetailsSkeleton />;
-  }
+  if (loading) return <ProductDetailsSkeleton />;
 
-  if (error) {
-    return <p className="text-red-500">{error}</p>;
-  }
+  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
 
-  if (!product) {
-    return <p>No product found</p>;
-  }
+  if (!product)
+    return <p className="text-center mt-10 text-gray-500">No product found</p>;
+
+  const isInCart = cart.some((item) => item.product.id === product.id);
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid md:grid-cols-2 gap-10">
       {/* Image */}
-      <div className="bg-white p-4 rounded-lg">
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
         <img
           src={product.thumbnail}
           alt={product.title}
-          className="w-full h-80 object-cover rounded"
+          className="w-full h-80 object-cover rounded-md"
         />
       </div>
 
       {/* Details */}
-      <div>
-        <h1 className="text-2xl font-bold">{product.title}</h1>
+      <div className="space-y-5">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          {product.title}
+        </h1>
 
-        <p className="text-gray-500 mt-2">{product.description}</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          {product.description}
+        </p>
 
-        <div className="mt-4 flex items-center gap-4">
-          <span className="text-xl font-semibold">₹{product.price}</span>
+        <div className="flex items-center gap-4">
+          <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+            ₹{product.price}
+          </span>
           <span className="text-yellow-500">⭐ {product.rating}</span>
         </div>
 
-        <div className="mt-6 space-y-1 text-sm text-gray-600">
+        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
           {product.brand && <p>Brand: {product.brand}</p>}
           {product.category && <p>Category: {product.category}</p>}
         </div>
 
         <button
           onClick={() => addToCart(product)}
-          className="mt-6 px-6 py-2 bg-black text-white rounded hover:bg-gray-700"
+          disabled={isInCart}
+          className={`
+          mt-6
+          px-6 py-3
+          rounded-md
+          font-medium
+          transition
+          cursor-pointer
+          ${
+            isInCart
+              ? "bg-gray-400  text-white"
+              : "bg-indigo-600 hover:bg-indigo-700 text-white"
+          }
+        `}
         >
-          Add to Cart
+          {isInCart ? "Added to Cart" : "Add to Cart"}
         </button>
       </div>
     </div>

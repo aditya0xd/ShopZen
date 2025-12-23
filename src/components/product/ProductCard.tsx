@@ -9,20 +9,44 @@ const ProductCard = ({ product }: Props) => {
   return (
     <Link
       to={`/products/${product.id}`}
-      className="border rounded-lg bg-white p-4 hover:shadow-md transition"
+      className="
+        group
+        rounded-lg
+        border border-gray-200 dark:border-gray-700
+        bg-white dark:bg-gray-900
+        p-4
+        transition
+        hover:shadow-lg
+        hover:-translate-y-0.5
+      "
     >
-      <img
-        src={product.thumbnail}
-        alt={product.title}
-        className="h-40 w-full object-cover rounded"
-      />
+      {/* Image */}
+      <div className="overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
+        <img
+          src={product.thumbnail}
+          alt={product.title}
+          loading="lazy"
+          className="
+            h-40 w-full object-cover
+            transition-transform duration-300
+            group-hover:scale-105
+          "
+        />
+      </div>
 
+      {/* Content */}
       <div className="mt-3">
-        <h3 className="text-sm font-semibold line-clamp-1">{product.title}</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-1">
+          {product.title}
+        </h3>
 
-        <p className="text-gray-500 text-sm mt-1">⭐ {product.rating}</p>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          ⭐ {product.rating}
+        </p>
 
-        <p className="mt-2 font-bold">₹{product.price}</p>
+        <p className="mt-2 text-lg font-bold text-gray-900 dark:text-gray-100">
+          ₹{product.price}
+        </p>
       </div>
     </Link>
   );
