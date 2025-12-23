@@ -1,43 +1,61 @@
 🛒 ShopZen
 
-ShopZen is a modern e-commerce frontend built with React, TypeScript, and Vite, focused on smooth product discovery using debounced search and infinite scrolling.
+ShopZen is a production-style e-commerce frontend built with React, TypeScript, and Vite, focused on performance, UX stability, and real-world frontend challenges like infinite scrolling, async race conditions, and state consistency.
 
-The project demonstrates real-world frontend patterns such as controlled pagination, IntersectionObserver-based infinite loading, and optimized async data handling.
+Rather than being feature-heavy, ShopZen emphasizes how modern frontends should behave under real user interaction.
+
+🎯 Why ShopZen?
+
+Most demo e-commerce projects focus on UI only.
+ShopZen focuses on engineering decisions behind a smooth browsing experience:
+
+Preventing unnecessary API calls
+
+Handling fast scrolling without glitches
+
+Avoiding duplicate data and inconsistent UI states
+
+Designing predictable UX for loading, error, and empty states
 
 ✨ Features
 
 🔍 Debounced Search
-Prevents excessive API calls while typing for a smoother UX.
+Reduces API load and prevents jittery UI during fast typing.
 
-♾️ Infinite Scroll
-Loads products progressively using the IntersectionObserver API.
+♾️ Infinite Scrolling
+Uses the IntersectionObserver API for efficient, scroll-based pagination.
 
 ⚡ Optimized Fetching
-Handles pagination, avoids duplicate requests, and prevents UI glitches during fast scrolling.
+Handles pagination safely, avoids duplicate requests, and prevents race conditions.
 
 🎨 Responsive UI
-Clean, mobile-friendly layout with Tailwind CSS.
+Clean, mobile-friendly layout built with Tailwind CSS.
 
-🌗 Dark Mode Ready
-Styled with Tailwind’s dark mode support.
+🌗 Dark Mode Support
+Fully styled using Tailwind’s dark mode utilities.
 
-🧠 Technical Highlights
+🛒 Cart UX Improvements
+Prevents duplicate additions and provides clear user feedback.
 
-Server-side pagination using DummyJSON API
+🧠 Engineering Highlights
 
-Debounced input handling with a custom hook
+Server-side pagination via DummyJSON API
 
-IntersectionObserver for scroll-based loading
+Custom hook for debounced input handling
 
-Careful state management to avoid:
+IntersectionObserver-based loading (no scroll listeners)
+
+Defensive state management to avoid:
 
 duplicate products
 
 race conditions
 
-scroll jitter
+scroll jitter & flicker
 
-Written fully in TypeScript
+Skeleton loaders aligned with final layouts (no CLS)
+
+Fully written in TypeScript
 
 🛠️ Tech Stack
 
@@ -52,20 +70,13 @@ Tailwind CSS
 IntersectionObserver API
 
 🚀 Getting Started
+git clone https://github.com/aditya0xd/ShopZen.git
+cd ShopZen
+npm install
+npm run dev
 
-1. Clone the repository
-   git clone https://github.com/aditya0xd/ShopZen.git
-   cd shopzen
-
-2. Install dependencies
-   npm install
-
-3. Start the development server
-   npm run dev
-
-The app will be available at:
-
-https://shop-zen-ten.vercel.app/products
+Live demo:
+👉 https://shop-zen-ten.vercel.app/
 
 📁 Project Structure (simplified)
 src/
@@ -75,7 +86,9 @@ src/
 ├── hooks/
 │ └── useDebounce.ts
 ├── pages/
-│ └── Products.tsx
+│ ├── Products.tsx
+│ └── ProductDetails.tsx
+├── context/
 ├── types/
 └── App.tsx
 
@@ -85,17 +98,16 @@ Category-based filtering
 
 Client-side caching
 
-Skeleton optimization
+Accessibility improvements
 
-Improved accessibility
+Persistent cart storage
 
 Backend integration
 
 👤 Author
 
 Aditya Yadav
-Frontend-focused developer exploring scalable UI patterns with React and TypeScript.
+Frontend-focused developer interested in scalable UI patterns, performance optimization, and real-world React behavior.
 
 ⭐ If you found this useful
-
-Feel free to star the repository — it helps a lot!
+Consider starring the repository — it really helps!
