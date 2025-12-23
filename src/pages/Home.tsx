@@ -1,6 +1,31 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import ProductCard from "../components/product/ProductCard";
+import ProductSkeleton from "../components/product/ProductSkeleton";
+import type { Product } from "../types/product";
 
 const Home = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const res = await fetch(
+          "https://dummyjson.com/products?limit=4&skip=0"
+        );
+        const data = await res.json();
+        setProducts(data.products);
+      } catch {
+        // fail silently for homepage
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrending();
+  }, []);
+
   return (
     <div className="max-w-7xl mx-auto px-6">
       {/* ================= HERO ================= */}
@@ -54,15 +79,13 @@ const Home = () => {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((item) => (
-            <div
-              key={item}
-              className="h-48 rounded-lg bg-gray-100 dark:bg-gray-800
-                flex items-center justify-center text-gray-400"
-            >
-              Product Preview
-            </div>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <ProductSkeleton key={i} />
+              ))
+            : products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
         </div>
       </section>
 
