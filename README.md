@@ -1,113 +1,109 @@
-🛒 ShopZen
+# 🛒 ShopZen — Performance-Focused E-commerce Frontend
 
-ShopZen is a production-style e-commerce frontend built with React, TypeScript, and Vite, focused on performance, UX stability, and real-world frontend challenges like infinite scrolling, async race conditions, and state consistency.
+ShopZen is a production-style e-commerce frontend built with **React, TypeScript, and Vite**, designed to demonstrate how modern UIs behave under **real user interaction**—fast scrolling, rapid input, and async edge cases.
 
-Rather than being feature-heavy, ShopZen emphasizes how modern frontends should behave under real user interaction.
+Instead of being feature-heavy, ShopZen focuses on **frontend engineering decisions** that prevent UI glitches, redundant requests, and inconsistent state.
 
-🎯 Why ShopZen?
+---
 
-Most demo e-commerce projects focus on UI only.
-ShopZen focuses on engineering decisions behind a smooth browsing experience:
+## 🎯 What This Project Demonstrates
 
-Preventing unnecessary API calls
+- Controlled API usage (no unnecessary calls)
+- Stable infinite scrolling without duplicate data
+- Predictable UX for loading, error, and empty states
+- Defensive state management under async conditions
 
-Handling fast scrolling without glitches
+---
 
-Avoiding duplicate data and inconsistent UI states
+## ✨ Key Features
 
-Designing predictable UX for loading, error, and empty states
+### 🔍 Debounced Search
 
-✨ Features
+Prevents excessive API calls during fast typing and avoids UI jitter.
 
-🔍 Debounced Search
-Reduces API load and prevents jittery UI during fast typing.
+### ♾️ Infinite Scrolling
 
-♾️ Infinite Scrolling
-Uses the IntersectionObserver API for efficient, scroll-based pagination.
+IntersectionObserver-based pagination (no scroll listeners).
 
-⚡ Optimized Fetching
-Handles pagination safely, avoids duplicate requests, and prevents race conditions.
+### ⚡ Safe Async Fetching
 
-🎨 Responsive UI
-Clean, mobile-friendly layout built with Tailwind CSS.
+Handles pagination correctly, avoids race conditions and duplicate requests.
 
-🌗 Dark Mode Support
-Fully styled using Tailwind’s dark mode utilities.
+### 🎨 Responsive UI + Dark Mode
 
-🛒 Cart UX Improvements
+Built with Tailwind CSS and fully mobile-friendly.
+
+### 🛒 Cart UX Guards
+
 Prevents duplicate additions and provides clear user feedback.
 
-🧠 Engineering Highlights
+---
 
-Server-side pagination via DummyJSON API
+## 🧠 Engineering Highlights
 
-Custom hook for debounced input handling
+- Server-side pagination using DummyJSON API
+- Custom debouncing hook for input control
+- IntersectionObserver for scroll-based loading
+- Skeleton loaders aligned with final layout (no CLS)
+- Fully typed with TypeScript
 
-IntersectionObserver-based loading (no scroll listeners)
+---
 
-Defensive state management to avoid:
+## 🛠 Tech Stack
 
-duplicate products
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- IntersectionObserver API
 
-race conditions
+---
 
-scroll jitter & flicker
+## 🚀 Getting Started
 
-Skeleton loaders aligned with final layouts (no CLS)
-
-Fully written in TypeScript
-
-🛠️ Tech Stack
-
-React
-
-TypeScript
-
-Vite
-
-Tailwind CSS
-
-IntersectionObserver API
-
-🚀 Getting Started
+```bash
 git clone https://github.com/aditya0xd/ShopZen.git
 cd ShopZen
 npm install
 npm run dev
+```
 
-Live demo:
+## 🔗 Live Demo
+
 👉 https://shop-zen-ten.vercel.app/
 
-📁 Project Structure (simplified)
+---
+
+## 📁 Project Structure (Simplified)
+
+```txt
 src/
 ├── components/
-│ ├── product/
-│ └── common/
+│   ├── product/
+│   └── common/
 ├── hooks/
-│ └── useDebounce.ts
+│   └── useDebounce.ts
 ├── pages/
-│ ├── Products.tsx
-│ └── ProductDetails.tsx
+│   ├── Products.tsx
+│   └── ProductDetails.tsx
 ├── context/
 ├── types/
 └── App.tsx
+```
 
-📌 Future Improvements
+## 📌 Planned Enhancements
 
-Category-based filtering
+- Category-based filtering
 
-Client-side caching
+- Client-side caching
 
-Accessibility improvements
+- Accessibility improvements
 
-Persistent cart storage
+- Persistent cart storage
 
-Backend integration
+- Backend integration
 
-👤 Author
+## 👤 Author
 
 Aditya Yadav
-Frontend-focused developer interested in scalable UI patterns, performance optimization, and real-world React behavior.
-
-⭐ If you found this useful
-Consider starring the repository — it really helps!
+Full-Stack developer
