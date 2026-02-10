@@ -12,7 +12,7 @@ const Home = () => {
     const fetchTrending = async () => {
       try {
         const res = await fetch(
-          "https://dummyjson.com/products?limit=4&skip=0"
+          "http://localhost:3000/api/v1/products?limit=4&skip=0",
         );
         const data = await res.json();
         setProducts(data.products);
@@ -110,7 +110,7 @@ const Home = () => {
       </section>
 
       {/* ================= BENEFITS ================= */}
-      <section className="grid gap-8 md:grid-cols-3 mt-24">
+      {/* <section className="grid gap-8 md:grid-cols-3 mt-24">
         <div className="p-6 rounded-lg border dark:border-gray-700">
           <h3 className="text-lg font-semibold mb-2">⚡ Fast Experience</h3>
           <p className="text-gray-600 dark:text-gray-400">
@@ -131,7 +131,7 @@ const Home = () => {
             Stable architecture built with modern React & TypeScript.
           </p>
         </div>
-      </section>
+      </section> */}
 
       {/* ================= FOOTER ================= */}
       <footer className="mt-32 py-10 border-t dark:border-gray-700 text-center">

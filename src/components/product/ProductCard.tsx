@@ -23,7 +23,7 @@ const ProductCard = ({ product }: Props) => {
       {/* Image */}
       <div className="overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
         <img
-          src={product.thumbnail}
+          src={product.images![0] || product.thumbnail}
           alt={product.title}
           loading="lazy"
           className="
@@ -45,7 +45,7 @@ const ProductCard = ({ product }: Props) => {
         </p>
 
         <p className="mt-2 text-lg font-bold text-gray-900 dark:text-gray-100">
-          ₹{product.price}
+          ${product.price}
         </p>
       </div>
     </Link>

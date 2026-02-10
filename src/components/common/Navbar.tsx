@@ -1,10 +1,12 @@
 import { Link, NavLink } from "react-router-dom";
 import { useCartContext } from "../../context/CartContext";
 import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../hooks/useAuth";
 
 const Navbar = () => {
   const { cart } = useCartContext();
   const { theme, toggleTheme } = useTheme();
+  const { logedIn, logout } = useAuth();
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -31,7 +33,6 @@ const Navbar = () => {
           <NavLink to="/products" className={navLinkClass}>
             Products
           </NavLink>
-
           {/* Cart */}
           <Link
             to="/cart"
@@ -47,6 +48,15 @@ const Navbar = () => {
               </span>
             )}
           </Link>
+          {logedIn ? (
+            <button onClick={logout} className="text-red-600">
+              Logout
+            </button>
+          ) : (
+            <span>
+              <Link to="/Login">Login</Link>/<Link to="/Signup">Signup</Link>
+            </span>
+          )}
 
           {/* Theme Toggle */}
           <button

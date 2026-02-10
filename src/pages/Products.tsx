@@ -24,20 +24,22 @@ const Products = () => {
 
   const fetchProducts = useCallback(
     async (currentPage: number, searchTerm: string) => {
-      if (loadingRef.current) return; // 👈 hard guard
+      if (loadingRef.current) return; //  hard guard
       loadingRef.current = true;
       try {
         setLoading(true);
         setError("");
 
-        // ✅ Fix: Use & after search query, not ?
-        const query = searchTerm
-          ? `/search?q=${encodeURIComponent(searchTerm)}&`
-          : "?";
+        const params = new URLSearchParams({
+          page: String(currentPage + 1), // backend is 1-based
+          limit: String(LIMIT),
+        });
 
-        const url = `https://dummyjson.com/products${query}limit=${LIMIT}&skip=${
-          currentPage * LIMIT
-        }`;
+        if (searchTerm) {
+          params.set("q", searchTerm);
+        }
+
+        const url = `http://localhost:3000/api/v1/products?${params.toString()}`;
 
         const res = await fetch(url);
 
@@ -56,14 +58,14 @@ const Products = () => {
       } catch (err) {
         setError("Something went wrong");
       } finally {
-        loadingRef.current = false; // 👈 release lock
+        loadingRef.current = false; // release lock
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
-  // ✅ Reset and fetch when search changes
+  // Reset and fetch when search changes
   useEffect(() => {
     setProducts([]);
     setPage(0);
@@ -77,7 +79,7 @@ const Products = () => {
     }
   }, [page, debouncedSearch, fetchProducts]);
 
-  // ✅ Fetch more when page increments (skip initial mount)
+  // Fetch more when page increments (skip initial mount)
 
   // IntersectionObserver setup
   useEffect(() => {
@@ -110,7 +112,7 @@ const Products = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={`product-${product.id}`} product={product} />
         ))}
       </div>
 

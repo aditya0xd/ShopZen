@@ -23,7 +23,7 @@ export default function ProductDetails() {
 
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`https://dummyjson.com/products/${id}`, {
+        const res = await fetch(`http://localhost:3000/api/v1/products/${id}`, {
           signal: controller.signal,
         });
 
@@ -58,7 +58,7 @@ export default function ProductDetails() {
       {/* Image */}
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
         <img
-          src={product.thumbnail}
+          src={product.images![0] || product.thumbnail}
           alt={product.title}
           className="w-full h-80 object-cover rounded-md"
         />
@@ -76,7 +76,7 @@ export default function ProductDetails() {
 
         <div className="flex items-center gap-4">
           <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            ₹{product.price}
+            ${product.price}
           </span>
           <span className="text-yellow-500">⭐ {product.rating}</span>
         </div>
