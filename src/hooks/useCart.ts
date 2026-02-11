@@ -6,7 +6,7 @@ import { getCartFromStorage, saveCartToStorage } from "../utils/storage";
 export const useCart = () => {
   const [cart, setCart] = useState<CartItem[]>(() => getCartFromStorage());
 
-  // 🔥 Persist cart
+  // Persist cart
   useEffect(() => {
     saveCartToStorage(cart);
   }, [cart]);
@@ -19,7 +19,7 @@ export const useCart = () => {
         return prev.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
-            : item
+            : item,
         );
       }
 
@@ -36,8 +36,8 @@ export const useCart = () => {
 
     setCart((prev) =>
       prev.map((item) =>
-        item.product.id === id ? { ...item, quantity: qty } : item
-      )
+        item.product.id === id ? { ...item, quantity: qty } : item,
+      ),
     );
   };
 
@@ -47,7 +47,7 @@ export const useCart = () => {
 
   const totalPrice = cart.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
-    0
+    0,
   );
 
   return {

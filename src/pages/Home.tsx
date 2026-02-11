@@ -10,7 +10,10 @@ const Home = () => {
 
   useEffect(() => {
     const fetchTrending = async () => {
-      const API_URL = import.meta.env.VITE_API_URL;
+      const API_URL =
+        import.meta.env.VITE_API_URL ||
+        "https://shopzen-backend-production.up.railway.app";
+
       try {
         const res = await fetch(`${API_URL}/api/v1/products?limit=4&skip=0`);
         const data = await res.json();

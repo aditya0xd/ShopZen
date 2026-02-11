@@ -20,7 +20,9 @@ export default function ProductDetails() {
     setProduct(null);
 
     const controller = new AbortController();
-    const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL =
+      import.meta.env.VITE_API_URL ||
+      "https://shopzen-backend-production.up.railway.app";
 
     const fetchProduct = async () => {
       try {

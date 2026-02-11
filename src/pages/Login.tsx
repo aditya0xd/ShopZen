@@ -19,7 +19,9 @@ function Login() {
     const password = formData.get("password") as string;
 
     const payload = { email, password };
-    const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL =
+      import.meta.env.VITE_API_URL ||
+      "https://shopzen-backend-production.up.railway.app";
 
     try {
       const res = await fetch(`${API_URL}/api/v1/auth/login`, {

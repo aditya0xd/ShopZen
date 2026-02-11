@@ -38,7 +38,10 @@ const Products = () => {
         if (searchTerm) {
           params.set("q", searchTerm);
         }
-        const API_URL = import.meta.env.VITE_API_URL;
+        const API_URL =
+          import.meta.env.VITE_API_URL ||
+          "https://shopzen-backend-production.up.railway.app";
+
         const url = `${API_URL}/api/v1/products?${params.toString()}`;
 
         const res = await fetch(url);
