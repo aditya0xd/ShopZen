@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 const Navbar = () => {
   const { cart } = useCartContext();
   const { theme, toggleTheme } = useTheme();
-  const { logedIn, logout } = useAuth();
+  const { logedIn, logout, name } = useAuth();
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -48,6 +48,7 @@ const Navbar = () => {
               </span>
             )}
           </Link>
+
           {logedIn ? (
             <button onClick={logout} className="text-red-600">
               Logout
@@ -57,6 +58,7 @@ const Navbar = () => {
               <Link to="/Login">Login</Link>/<Link to="/Signup">Signup</Link>
             </span>
           )}
+          <span className=" text-gray-600 dark:text-gray-300">{name} </span>
 
           {/* Theme Toggle */}
           <button

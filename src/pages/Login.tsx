@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { AuthContext } from "../context/authContext";
+import { AuthContext } from "../context/AuthContext";
 
 function Login() {
   const auth = useContext(AuthContext);
@@ -19,15 +19,17 @@ function Login() {
     const password = formData.get("password") as string;
 
     const payload = { email, password };
+    const API_URL = import.meta.env.VITE_API_URL;
 
     try {
-      const res = await fetch("http://localhost:3000/api/v1/auth/login", {
+      const res = await fetch(`${API_URL}/api/v1/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
+      console.log("login user name", data.name);
 
       if (!res.ok) {
         setStatus(data.message);
@@ -38,11 +40,10 @@ function Login() {
       if (!auth) {
         throw new Error("AuthContext must be used inside AuthProvider");
       }
-      auth.login(data.accessToken);
+      auth.login(data.accessToken, data.name);
       console.log("Login successful", data.accessToken);
       console.log("Form submitted");
 
-      localStorage.setItem("accessToken", data.accessToken);
       setStatus(data.message);
       setNewUser(false);
       setStatus("");

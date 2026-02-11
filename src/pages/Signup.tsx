@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 
 function Signup() {
   const navigator = useNavigate();
-  const [token, setToken] = useState<string>("");
   const [isError, setIsError] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
 
@@ -11,15 +10,17 @@ function Signup() {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const age = Number(formData.get("age"));
     const city = formData.get("city") as string;
 
-    const payload = { email, password, age, city };
+    const payload = { name, email, password, age, city };
+    const API_URL = import.meta.env.VITE_API_URL;
 
     try {
-      const res = await fetch("http://localhost:3000/api/v1/auth/register", {
+      const res = await fetch(`${API_URL}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -30,12 +31,10 @@ function Signup() {
       if (!res.ok) {
         setIsError(true);
         setStatus(data.message);
-        setToken(data.token || "");
         return;
       }
 
       setIsError(false);
-      setToken(data.token);
       setStatus(data.message);
       navigator("/login");
     } catch {

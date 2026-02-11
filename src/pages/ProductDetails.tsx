@@ -20,10 +20,11 @@ export default function ProductDetails() {
     setProduct(null);
 
     const controller = new AbortController();
+    const API_URL = import.meta.env.VITE_API_URL;
 
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/v1/products/${id}`, {
+        const res = await fetch(`${API_URL}/api/v1/products/${id}`, {
           signal: controller.signal,
         });
 

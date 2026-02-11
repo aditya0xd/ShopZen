@@ -10,10 +10,9 @@ const Home = () => {
 
   useEffect(() => {
     const fetchTrending = async () => {
+      const API_URL = import.meta.env.VITE_API_URL;
       try {
-        const res = await fetch(
-          "http://localhost:3000/api/v1/products?limit=4&skip=0",
-        );
+        const res = await fetch(`${API_URL}/api/v1/products?limit=4&skip=0`);
         const data = await res.json();
         setProducts(data.products);
       } catch {
