@@ -3,6 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
+type LoginPayload = {
+  accessToken?: string;
+  token?: string;
+  refreshToken?: string;
+  name?: string;
+  user?: {
+    name?: string;
+  };
+};
+
+type LoginResponse = {
+  data?: LoginPayload;
+  message?: string;
+} & LoginPayload;
+
 function Login() {
   const auth = useContext(AuthContext);
 
@@ -30,11 +45,10 @@ function Login() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      console.log("login user name", data.name);
+      const data: LoginResponse = await res.json();
 
       if (!res.ok) {
-        setStatus(data.message);
+        setStatus(data.message || "Login failed");
         setNewUser(true);
         return;
       }
@@ -42,11 +56,20 @@ function Login() {
       if (!auth) {
         throw new Error("AuthContext must be used inside AuthProvider");
       }
-      auth.login(data.accessToken, data.name);
-      console.log("Login successful", data.accessToken);
-      console.log("Form submitted");
 
-      setStatus(data.message);
+      const authData = data.data ?? data;
+      const token = authData.accessToken || authData.token;
+      const name = authData.name || authData.user?.name || "";
+
+      if (!token) {
+        setStatus("Login succeeded but token was not returned");
+        setNewUser(true);
+        return;
+      }
+
+      auth.login(token, name);
+
+      setStatus(data.message || "Login successful");
       setNewUser(false);
       setStatus("");
 
@@ -58,7 +81,7 @@ function Login() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
           Login

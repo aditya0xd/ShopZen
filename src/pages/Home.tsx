@@ -29,7 +29,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
       {/* ================= HERO ================= */}
       <section className="py-20 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100">
@@ -41,7 +41,7 @@ const Home = () => {
           and a clutter-free shopping experience.
         </p>
 
-        <div className="mt-10 flex justify-center gap-4">
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <Link
             to="/products"
             className="px-7 py-3 rounded-md bg-indigo-600 text-white font-medium

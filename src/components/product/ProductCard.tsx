@@ -1,5 +1,6 @@
 import type { Product } from "../../types/product";
 import { Link } from "react-router-dom";
+import ProgressiveImage from "../common/ProgressiveImage";
 
 type Props = {
   product: Product;
@@ -22,10 +23,12 @@ const ProductCard = ({ product }: Props) => {
     >
       {/* Image */}
       <div className="overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
-        <img
-          src={product.images![0] || product.thumbnail}
+        <ProgressiveImage
+          thumbnailSrc={product.thumbnail}
+          highResSrc={product.image || product.images?.[0]}
           alt={product.title}
           loading="lazy"
+          delayMs={600}
           className="
             h-40 w-full object-cover
             transition-transform duration-300

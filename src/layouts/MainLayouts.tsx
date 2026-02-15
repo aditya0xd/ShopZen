@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
+import FloatingChatWidget from "../components/common/FloatingChatWidget";
 
 const MainLayout = () => {
   return (
@@ -9,6 +10,7 @@ const MainLayout = () => {
       <main className="mx-auto max-w-7xl px-4 py-6">
         <Outlet />
       </main>
+      <FloatingChatWidget />
     </div>
   );
 };

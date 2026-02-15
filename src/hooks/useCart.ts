@@ -1,54 +1,248 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Product } from "../types/product";
 import type { CartItem } from "../types/cart";
 import { getCartFromStorage, saveCartToStorage } from "../utils/storage";
+import { useAuth } from "./useAuth";
+
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://shopzen-backend-production.up.railway.app";
+const ACCESS_TOKEN_KEY = "accessToken";
+
+type CartApiItem = {
+  productId?: string | number;
+  quantity?: number;
+  product?: Partial<Product>;
+};
+
+type CartApiResponse = {
+  items?: CartApiItem[];
+  totalPrice?: number;
+};
+
+const normalizeCartItem = (item: CartApiItem): CartItem => {
+  const product = item.product ?? {};
+  const fallbackImage = product.image || product.images?.[0] || "";
+
+  return {
+    quantity: Number(item.quantity ?? 1),
+    product: {
+      id: product.id ?? item.productId ?? "",
+      title: product.title ?? "Product",
+      description: product.description ?? "",
+      price: Number(product.price ?? 0),
+      image: product.image,
+      thumbnail: product.thumbnail ?? fallbackImage,
+      rating: Number(product.rating ?? 0),
+      discountPercentage: product.discountPercentage,
+      stock: product.stock,
+      availabilityStatus: product.availabilityStatus,
+      brand: product.brand,
+      category: product.category,
+      images: Array.isArray(product.images) ? product.images : undefined,
+    },
+  };
+};
 
 export const useCart = () => {
+  const { logedIn } = useAuth();
   const [cart, setCart] = useState<CartItem[]>(() => getCartFromStorage());
+  const [serverTotalPrice, setServerTotalPrice] = useState<number | null>(null);
 
-  // Persist cart
-  useEffect(() => {
-    saveCartToStorage(cart);
-  }, [cart]);
+  const hydrateCart = useCallback(async () => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (!logedIn || !token) {
+      setServerTotalPrice(null);
+      setCart(getCartFromStorage());
+      return;
+    }
 
-  const addToCart = (product: Product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/cart`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        );
+      if (res.status === 404) {
+        setCart([]);
+        setServerTotalPrice(0);
+        return;
       }
 
-      return [...prev, { product, quantity: 1 }];
+      if (!res.ok) {
+        throw new Error("Failed to hydrate cart");
+      }
+
+      const data: CartApiResponse = await res.json();
+      const nextCart = Array.isArray(data.items)
+        ? data.items.map(normalizeCartItem)
+        : [];
+
+      setCart(nextCart);
+      setServerTotalPrice(
+        typeof data.totalPrice === "number" ? data.totalPrice : null,
+      );
+    } catch {
+      setCart([]);
+      setServerTotalPrice(0);
+    }
+  }, [logedIn]);
+
+  useEffect(() => {
+    void hydrateCart();
+  }, [hydrateCart]);
+
+  const addToCart = async (product: Product) => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (logedIn && token) {
+      try {
+        const res = await fetch(`${API_URL}/api/v1/cart/items`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId: String(product.id),
+            quantity: 1,
+          }),
+        });
+
+        if (!res.ok) {
+          return;
+        }
+
+        await hydrateCart();
+      } catch {
+        // no-op
+      }
+      return;
+    }
+
+    setServerTotalPrice(null);
+    setCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      const nextCart = existing
+        ? prev.map((item) =>
+            item.product.id === product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item,
+          )
+        : [...prev, { product, quantity: 1 }];
+
+      saveCartToStorage(nextCart);
+      return nextCart;
     });
   };
 
-  const removeFromCart = (id: number) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== id));
+  const removeFromCart = async (id: string | number) => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (logedIn && token) {
+      try {
+        const res = await fetch(`${API_URL}/api/v1/cart/items`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId: String(id),
+          }),
+        });
+
+        if (!res.ok) {
+          return;
+        }
+
+        await hydrateCart();
+      } catch {
+        // no-op
+      }
+      return;
+    }
+
+    setServerTotalPrice(null);
+    setCart((prev) => {
+      const nextCart = prev.filter((item) => item.product.id !== id);
+      saveCartToStorage(nextCart);
+      return nextCart;
+    });
   };
 
-  const updateQuantity = (id: number, qty: number) => {
+  const updateQuantity = async (id: string | number, qty: number) => {
     if (qty < 1) return;
 
-    setCart((prev) =>
-      prev.map((item) =>
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (logedIn && token) {
+      try {
+        const res = await fetch(`${API_URL}/api/v1/cart/items`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId: String(id),
+            quantity: qty,
+          }),
+        });
+
+        if (!res.ok) {
+          return;
+        }
+
+        await hydrateCart();
+      } catch {
+        // no-op
+      }
+      return;
+    }
+
+    setServerTotalPrice(null);
+    setCart((prev) => {
+      const nextCart = prev.map((item) =>
         item.product.id === id ? { ...item, quantity: qty } : item,
-      ),
-    );
+      );
+      saveCartToStorage(nextCart);
+      return nextCart;
+    });
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (logedIn && token) {
+      try {
+        const res = await fetch(`${API_URL}/api/v1/cart`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok && res.status !== 404) {
+          return;
+        }
+
+        setCart([]);
+        setServerTotalPrice(0);
+      } catch {
+        // no-op
+      }
+      return;
+    }
+
+    setServerTotalPrice(null);
     setCart([]);
+    saveCartToStorage([]);
   };
 
-  const totalPrice = cart.reduce(
+  const localTotalPrice = cart.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0,
   );
+  const totalPrice =
+    logedIn && serverTotalPrice !== null ? serverTotalPrice : localTotalPrice;
 
   return {
     cart,

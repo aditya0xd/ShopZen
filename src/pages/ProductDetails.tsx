@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { Product } from "../types/product";
 import { useCartContext } from "../context/CartContext";
 import ProductDetailsSkeleton from "../components/product/ProductDetailsSkeleton";
+import ProgressiveImage from "../components/common/ProgressiveImage";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -60,9 +61,12 @@ export default function ProductDetails() {
     <div className="grid md:grid-cols-2 gap-10">
       {/* Image */}
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
-        <img
-          src={product.images![0] || product.thumbnail}
+        <ProgressiveImage
+          thumbnailSrc={product.thumbnail}
+          highResSrc={product.image || product.images?.[0]}
           alt={product.title}
+          loading="eager"
+          delayMs={800}
           className="w-full h-80 object-cover rounded-md"
         />
       </div>
@@ -77,7 +81,7 @@ export default function ProductDetails() {
           {product.description}
         </p>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             ${product.price}
           </span>

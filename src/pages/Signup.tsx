@@ -13,10 +13,8 @@ function Signup() {
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const age = Number(formData.get("age"));
-    const city = formData.get("city") as string;
 
-    const payload = { name, email, password, age, city };
+    const payload = { name, email, password };
     const API_URL =
       import.meta.env.VITE_API_URL ||
       "https://shopzen-backend-production.up.railway.app";
@@ -46,7 +44,7 @@ function Signup() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
           Signup

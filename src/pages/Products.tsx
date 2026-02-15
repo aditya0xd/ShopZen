@@ -14,6 +14,8 @@ const Products = () => {
 
   const [error, setError] = useState("");
 
+  const [category, setCategory] = useState("");
+
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search);
 
@@ -23,7 +25,11 @@ const Products = () => {
   // Fetch function (outside useEffect)
 
   const fetchProducts = useCallback(
-    async (currentPage: number, searchTerm: string) => {
+    async (
+      currentPage: number,
+      searchTerm: string,
+      selectedCategory: string,
+    ) => {
       if (loadingRef.current) return; //  hard guard
       loadingRef.current = true;
       try {
@@ -37,6 +43,10 @@ const Products = () => {
 
         if (searchTerm) {
           params.set("q", searchTerm);
+        }
+
+        if (selectedCategory) {
+          params.set("category", selectedCategory);
         }
         const API_URL =
           import.meta.env.VITE_API_URL ||
@@ -56,8 +66,7 @@ const Products = () => {
 
           return newProducts;
         });
-
-        setHasMore(data.products.length === LIMIT);
+        setHasMore(data.pagination.hasNext);
       } catch (err) {
         setError("Something went wrong");
       } finally {
@@ -73,14 +82,14 @@ const Products = () => {
     setProducts([]);
     setPage(0);
     setHasMore(true);
-    fetchProducts(0, debouncedSearch);
-  }, [debouncedSearch, fetchProducts]);
+    fetchProducts(0, debouncedSearch, category);
+  }, [debouncedSearch, category, fetchProducts]);
 
   useEffect(() => {
     if (page > 0) {
-      fetchProducts(page, debouncedSearch);
+      fetchProducts(page, debouncedSearch, category);
     }
-  }, [page, debouncedSearch, fetchProducts]);
+  }, [page, debouncedSearch, category, fetchProducts]);
 
   // Fetch more when page increments (skip initial mount)
 
@@ -110,6 +119,20 @@ const Products = () => {
           bg-white text-gray-900
           dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
       />
+
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="mb-6 w-full rounded border px-4 py-2 
+    bg-white text-gray-900
+    dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
+      >
+        <option value="">All Categories</option>
+        <option value="smartphones">Electronics</option>
+        <option value="mens-shirts">Fashion</option>
+        <option value="groceries">Groceries</option>
+        <option value="sports-accessories">Sports</option>
+      </select>
 
       {error && <p className="text-red-500">{error}</p>}
 
