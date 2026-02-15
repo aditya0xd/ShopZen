@@ -67,7 +67,9 @@ export default function Cart() {
                   -
                 </button>
 
-                <span className="px-3 text-sm font-medium">{item.quantity}</span>
+                <span className="px-3 text-sm font-medium">
+                  {item.quantity}
+                </span>
 
                 <button
                   onClick={() =>
@@ -95,11 +97,10 @@ export default function Cart() {
           Total
         </span>
         <span className="text-xl font-bold text-indigo-600">
-          {"\u20B9"}
+          {"$"}
           {totalPrice}
         </span>
       </div>
     </div>
   );
 }
-
