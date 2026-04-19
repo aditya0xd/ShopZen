@@ -4,7 +4,7 @@ import type { Product } from "../types/product";
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product) => Promise<boolean>;
   removeFromCart: (id: string | number) => void;
   updateQuantity: (id: string | number, qty: number) => void;
   clearCart: () => void;

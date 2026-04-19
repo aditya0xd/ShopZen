@@ -1,13 +1,13 @@
 import { useCallback, useState } from "react";
 import type { ChatMessage, ChatRole } from "../types/chat";
+import { getAccessToken } from "@/lib/auth";
 import { useAuth } from "./useAuth";
 
 const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://shopzen-backend-production.up.railway.app";
-const ACCESS_TOKEN_KEY = "accessToken";
+  import.meta.env.VITE_API_URL || "https://shopzen-backend.onrender.com";
 const MAX_CHAT_CONTENT_LENGTH = 2000;
-const AI_FALLBACK_ERROR_MARKER = "i encountered an error processing your request";
+const AI_FALLBACK_ERROR_MARKER =
+  "i encountered an error processing your request";
 
 type UnknownObject = Record<string, unknown>;
 
@@ -120,7 +120,7 @@ export const useChat = () => {
   const [error, setError] = useState("");
   const [aiUnavailable, setAiUnavailable] = useState(false);
 
-  const getToken = () => localStorage.getItem(ACCESS_TOKEN_KEY);
+  const getToken = () => getAccessToken();
   const parseJsonSafely = async (res: Response): Promise<unknown> => {
     try {
       return await res.json();
@@ -233,7 +233,9 @@ export const useChat = () => {
         const payload: unknown = await parseJsonSafely(res);
 
         if (res.status === 401) {
-          setMessages((prev) => prev.filter((message) => message.id !== tempId));
+          setMessages((prev) =>
+            prev.filter((message) => message.id !== tempId),
+          );
           setError(
             getErrorMessage(
               payload,
@@ -245,7 +247,9 @@ export const useChat = () => {
         }
 
         if (!res.ok) {
-          setMessages((prev) => prev.filter((message) => message.id !== tempId));
+          setMessages((prev) =>
+            prev.filter((message) => message.id !== tempId),
+          );
           setError(getErrorMessage(payload, "Failed to send message"));
           return false;
         }

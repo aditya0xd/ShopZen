@@ -12,7 +12,7 @@ const Home = () => {
     const fetchTrending = async () => {
       const API_URL =
         import.meta.env.VITE_API_URL ||
-        "https://shopzen-backend-production.up.railway.app";
+        "https://shopzen-backend.onrender.com";
 
       try {
         const res = await fetch(`${API_URL}/api/v1/products?limit=4&skip=0`);

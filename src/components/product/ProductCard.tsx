@@ -1,6 +1,7 @@
 import type { Product } from "../../types/product";
 import { Link } from "react-router-dom";
 import ProgressiveImage from "../common/ProgressiveImage";
+import { formatPrice } from "@/lib/utils";
 
 type Props = {
   product: Product;
@@ -48,7 +49,7 @@ const ProductCard = ({ product }: Props) => {
         </p>
 
         <p className="mt-2 text-lg font-bold text-gray-900 dark:text-gray-100">
-          ${product.price}
+          {formatPrice(product.price)}
         </p>
       </div>
     </Link>

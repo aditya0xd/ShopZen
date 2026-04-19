@@ -5,6 +5,13 @@ import { useCartContext } from "../context/CartContext";
 import ProductDetailsSkeleton from "../components/product/ProductDetailsSkeleton";
 import ProgressiveImage from "../components/common/ProgressiveImage";
 
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import { formatPrice } from "@/lib/utils";
+
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const { cart, addToCart } = useCartContext();
@@ -12,6 +19,8 @@ export default function ProductDetails() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // state for add-to-cart button activity must be declared before any conditional return
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -23,7 +32,7 @@ export default function ProductDetails() {
     const controller = new AbortController();
     const API_URL =
       import.meta.env.VITE_API_URL ||
-      "https://shopzen-backend-production.up.railway.app";
+      "https://shopzen-backend.onrender.com";
 
     const fetchProduct = async () => {
       try {
@@ -53,65 +62,69 @@ export default function ProductDetails() {
   if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
 
   if (!product)
-    return <p className="text-center mt-10 text-gray-500">No product found</p>;
+    return (
+      <p className="text-center mt-10 text-muted-foreground">
+        No product found
+      </p>
+    );
 
   const isInCart = cart.some((item) => item.product.id === product.id);
+
+  const handleAdd = async () => {
+    if (isInCart || adding) return;
+    setAdding(true);
+    const ok = await addToCart(product);
+    setAdding(false);
+
+    if (!ok) {
+      toast.error("Unable to add item. Please try again.");
+    } else {
+      toast.success("Added to cart");
+    }
+  };
 
   return (
     <div className="grid md:grid-cols-2 gap-10">
       {/* Image */}
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
-        <ProgressiveImage
-          thumbnailSrc={product.thumbnail}
-          highResSrc={product.image || product.images?.[0]}
-          alt={product.title}
-          loading="eager"
-          delayMs={800}
-          className="w-full h-80 object-cover rounded-md"
-        />
-      </div>
+      <Card>
+        <CardContent className="p-4">
+          <ProgressiveImage
+            thumbnailSrc={product.thumbnail}
+            highResSrc={product.image || product.images?.[0]}
+            alt={product.title}
+            loading="eager"
+            delayMs={800}
+            className="w-full h-80 object-cover rounded-md"
+          />
+        </CardContent>
+      </Card>
 
       {/* Details */}
-      <div className="space-y-5">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          {product.title}
-        </h1>
-
-        <p className="text-gray-600 dark:text-gray-400">
-          {product.description}
-        </p>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            ${product.price}
-          </span>
-          <span className="text-yellow-500">⭐ {product.rating}</span>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">{product.title}</h1>
+          <p className="text-muted-foreground mt-2">{product.description}</p>
         </div>
 
-        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex items-center gap-4">
+          <span className="text-2xl font-semibold">{formatPrice(product.price)}</span>
+          <Badge variant="secondary">⭐ {product.rating}</Badge>
+        </div>
+
+        <Separator />
+
+        <div className="space-y-2 text-sm text-muted-foreground">
           {product.brand && <p>Brand: {product.brand}</p>}
           {product.category && <p>Category: {product.category}</p>}
         </div>
 
-        <button
-          onClick={() => addToCart(product)}
-          disabled={isInCart}
-          className={`
-          mt-6
-          px-6 py-3
-          rounded-md
-          font-medium
-          transition
-          cursor-pointer
-          ${
-            isInCart
-              ? "bg-gray-400  text-white"
-              : "bg-indigo-600 hover:bg-indigo-700 text-white"
-          }
-        `}
+        <Button
+          onClick={handleAdd}
+          disabled={isInCart || adding}
+          className="w-fit"
         >
-          {isInCart ? "Added to Cart" : "Add to Cart"}
-        </button>
+          {adding ? "Adding..." : isInCart ? "Added to Cart" : "Add to Cart"}
+        </Button>
       </div>
     </div>
   );

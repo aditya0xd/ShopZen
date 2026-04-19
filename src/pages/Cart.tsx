@@ -1,105 +1,242 @@
 import { useCartContext } from "../context/CartContext";
 import ProgressiveImage from "../components/common/ProgressiveImage";
+import { Link } from "react-router-dom";
+import { useState } from "react";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { formatPrice } from "@/lib/utils";
 
 export default function Cart() {
   const { cart, removeFromCart, updateQuantity, totalPrice } = useCartContext();
 
+  const [coupon, setCoupon] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+
+  const FREE_DELIVERY_THRESHOLD = 499;
+  const DEFAULT_DELIVERY_FEE = 40;
+  const deliveryFree = totalPrice > FREE_DELIVERY_THRESHOLD;
+  const DELIVERY_FEE = deliveryFree ? 0 : DEFAULT_DELIVERY_FEE;
+  const PLATFORM_FEE = 10;
+
+  const subTotal = totalPrice + DELIVERY_FEE + PLATFORM_FEE;
+
+  const COUPONS: Record<string, { percent: number; label: string }> = {
+    save10: { percent: 10, label: "10% off" },
+    save5: { percent: 5, label: "5% off" },
+    extra10: { percent: 10, label: "10% off" },
+    welcome5: { percent: 5, label: "5% off" },
+  };
+
+  const applyCoupon = () => {
+    const code = coupon.trim().toLowerCase();
+    const couponConfig = COUPONS[code];
+
+    if (couponConfig) {
+      const disc = subTotal * (couponConfig.percent / 100);
+      setDiscount(disc);
+      setAppliedCoupon(code);
+      toast.success(`Coupon applied — ${couponConfig.label}`);
+    } else {
+      setDiscount(0);
+      setAppliedCoupon(null);
+      toast.error("Invalid coupon — Try SAVE10, SAVE5, EXTRA10, or WELCOME5");
+    }
+  };
+
+  const grandTotal = subTotal - discount;
+
   if (cart.length === 0) {
     return (
-      <div className="mt-20 text-center">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-          Your cart is empty
-        </h2>
-        <p className="mt-2 text-gray-500 dark:text-gray-400">
+      <div className="mt-20 text-center space-y-4">
+        <h2 className="text-xl font-semibold">Your cart is empty</h2>
+        <p className="text-muted-foreground">
           Looks like you haven't added anything yet.
         </p>
+
+        <Button asChild>
+          <Link to="/products">Continue Shopping</Link>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-gray-100">
-        Your Cart
-      </h1>
+    <div className="mx-auto max-w-6xl grid gap-10 lg:grid-cols-3">
+      {/* Cart Items */}
+      <div className="lg:col-span-2 space-y-4">
+        <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
 
-      <div className="space-y-4">
-        {cart.map((item) => (
-          <div
-            key={item.product.id}
-            className="
-              flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-4
-              dark:border-gray-700 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between
-            "
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-14 w-14 overflow-hidden rounded-md border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
-                <ProgressiveImage
-                  thumbnailSrc={item.product.thumbnail}
-                  highResSrc={item.product.image || item.product.images?.[0]}
-                  alt={item.product.title}
-                  loading="lazy"
-                  delayMs={500}
-                  className="h-full w-full object-cover"
-                />
-              </div>
+        {cart.map((item) => {
+          const subtotal = item.product.price * item.quantity;
 
-              <div>
-                <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-                  {item.product.title}
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {"\u20B9"}
-                  {item.product.price}
-                </p>
-              </div>
-            </div>
+          return (
+            <Card key={item.product.id}>
+              <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-16 w-16 overflow-hidden rounded-md border bg-muted">
+                    <ProgressiveImage
+                      thumbnailSrc={item.product.thumbnail}
+                      highResSrc={
+                        item.product.image || item.product.images?.[0]
+                      }
+                      alt={item.product.title}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
 
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center rounded border border-gray-300 dark:border-gray-600">
-                <button
-                  onClick={() =>
-                    updateQuantity(item.product.id, item.quantity - 1)
-                  }
-                  disabled={item.quantity <= 1}
-                  className="px-3 py-1 text-lg hover:bg-gray-100 disabled:opacity-40 dark:hover:bg-gray-800"
-                >
-                  -
-                </button>
+                  <div>
+                    <h2 className="font-semibold">{item.product.title}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {formatPrice(item.product.price)}
+                    </p>
+                    <p className="text-sm font-medium">Subtotal: {formatPrice(subtotal)}</p>
+                  </div>
+                </div>
 
-                <span className="px-3 text-sm font-medium">
-                  {item.quantity}
-                </span>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center rounded-md border">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        updateQuantity(item.product.id, item.quantity - 1)
+                      }
+                      disabled={item.quantity <= 1}
+                    >
+                      -
+                    </Button>
 
-                <button
-                  onClick={() =>
-                    updateQuantity(item.product.id, item.quantity + 1)
-                  }
-                  className="px-3 py-1 text-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  +
-                </button>
-              </div>
+                    <span className="px-3 text-sm font-medium">
+                      {item.quantity}
+                    </span>
 
-              <button
-                onClick={() => removeFromCart(item.product.id)}
-                className="text-sm text-red-500 transition hover:text-red-600"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        updateQuantity(item.product.id, item.quantity + 1)
+                      }
+                    >
+                      +
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      removeFromCart(item.product.id);
+                      toast.success("Item removed from cart");
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      <div className="mt-10 flex items-center justify-between border-t pt-6 dark:border-gray-700">
-        <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Total
-        </span>
-        <span className="text-xl font-bold text-indigo-600">
-          {"$"}
-          {totalPrice}
-        </span>
+      {/* Order Summary */}
+      <div className="lg:sticky lg:top-20 h-fit">
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <h2 className="text-lg font-semibold">Order Summary</h2>
+
+            <div className="space-y-1">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Coupon code"
+                  value={coupon}
+                  onChange={(e) => setCoupon(e.target.value)}
+                  disabled={!!appliedCoupon}
+                />
+                {appliedCoupon ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setDiscount(0);
+                      setAppliedCoupon(null);
+                      toast.success("Coupon removed");
+                    }}
+                  >
+                    Remove
+                  </Button>
+                ) : (
+                  <Button variant="secondary" onClick={applyCoupon}>
+                    Apply
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Try: SAVE10, SAVE5, EXTRA10, WELCOME5
+              </p>
+              {appliedCoupon && (
+                <p className="text-xs text-green-600 font-medium">
+                  {COUPONS[appliedCoupon].label} applied
+                </p>
+              )}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Items Total</span>
+                <span>{formatPrice(totalPrice)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Delivery Fee</span>
+                <span className={deliveryFree ? "flex items-center gap-2" : ""}>
+                  {deliveryFree ? (
+                    <>
+                      <span className="line-through text-muted-foreground">
+                        {formatPrice(DEFAULT_DELIVERY_FEE)}
+                      </span>
+                      <span className="text-green-600 font-medium">Free</span>
+                    </>
+                  ) : (
+                    formatPrice(DELIVERY_FEE)
+                  )}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Platform Fee</span>
+                <span>{formatPrice(PLATFORM_FEE)}</span>
+              </div>
+
+              {discount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount</span>
+                  <span>-{formatPrice(discount)}</span>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            <div className="flex justify-between font-semibold">
+              <span>Total</span>
+              <span>{formatPrice(grandTotal)}</span>
+            </div>
+
+            <Button className="w-full" asChild>
+              <Link to="/checkout">Proceed to Checkout</Link>
+            </Button>
+
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/products">Continue Shopping</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

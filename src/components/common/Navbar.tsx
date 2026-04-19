@@ -1,27 +1,74 @@
-import { Link, NavLink } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useCartContext } from "../../context/CartContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
+import { useDebounce } from "../../hooks/useDebounce";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import MobileNavbar from "./MobileNavbar";
+
+import { LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { useRef } from "react";
 
 const Navbar = () => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const location = useLocation();
   const { cart } = useCartContext();
   const { theme, toggleTheme } = useTheme();
   const { logedIn, logout, name } = useAuth();
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+
+  const debounced = useDebounce(search, 500);
+
+  const isAuthPage =
+    location.pathname === "/Login" ||
+    location.pathname.toLowerCase() === "/signup";
+
+  useEffect(() => {
+    if (location.pathname === "/products") {
+      const params = new URLSearchParams(location.search);
+      const q = params.get("q") || "";
+      setSearch(q);
+    }
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const value = debounced.trim();
+    const isProductListPage = location.pathname === "/products";
+
+    // DO NOTHING if not on products list page
+    if (!isProductListPage) return;
+
+    // Empty search → remove query
+    if (!value) {
+      if (location.search) {
+        navigate("/products", { replace: true });
+      }
+      return;
+    }
+
+    const url = `/products?q=${encodeURIComponent(value)}`;
+    navigate(url, { replace: true });
+  }, [debounced, location.pathname, location.search, navigate]);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const initial = name ? name.charAt(0).toUpperCase() : "U";
-  const themeLabel = theme === "light" ? "Dark" : "Light";
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-sm font-medium transition ${
-      isActive
-        ? "text-indigo-600"
-        : "text-gray-600 dark:text-gray-300 hover:text-indigo-600"
-    }`;
+  const themeLabel = theme === "light" ? "Dark" : "Light";
 
   const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     `block rounded-md px-2 py-2 text-sm font-medium transition ${
@@ -40,58 +87,74 @@ const Navbar = () => {
           >
             Shop<span className="text-indigo-600">Zen</span>
           </Link>
+          <div className="relative w-full max-w-xl sm:flex sm:items-center">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              className="pl-9"
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onFocus={() => {
+                // Don't navigate on focus when on Login/Signup - avoids stealing focus from form
+                if (isAuthPage) return;
+                if (location.pathname !== "/products") {
+                  navigate("/products");
+                  setTimeout(() => inputRef.current?.focus(), 0);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                if (isAuthPage) {
+                  const q = search.trim();
+                  navigate(q ? `/products?q=${encodeURIComponent(q)}` : "/products");
+                }
+              }}
+            />
+          </div>
 
           <div className="hidden items-center gap-6 sm:flex">
-            <NavLink to="/products" className={navLinkClass}>
-              Products
-            </NavLink>
-
             <Link
               to="/cart"
-              className="relative text-sm font-medium text-gray-600 transition hover:text-indigo-600 dark:text-gray-300"
+              className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-300"
             >
               Cart
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-3 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo-600 px-1 text-xs text-white">
-                  {totalItems}
-                </span>
+                <Badge variant="secondary">{totalItems}</Badge>
               )}
             </Link>
 
             {!logedIn && (
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                <Link to="/Login">Login</Link>/<Link to="/Signup">Signup</Link>
-              </span>
+              <Link
+                className="text-sm text-gray-700 hover:text-indigo-600 dark:text-gray-300"
+                to="/Login"
+              >
+                Login
+              </Link>
             )}
 
             {logedIn && (
-              <div className="relative">
-                <button
-                  onClick={() => setProfileOpen((open) => !open)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-white uppercase"
-                >
-                  {initial}
-                </button>
-                {profileOpen && (
-                  <div className="absolute right-0 z-20 mt-2 w-40 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                    <div className="truncate px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-                      {name || "User"}
-                    </div>
-                    <div className="border-t border-gray-100 dark:border-gray-700" />
-                    <button
-                      onClick={() => {
-                        logout();
-                        setProfileOpen(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-white uppercase">
+                    {initial}
+                  </button>
+                </DropdownMenuTrigger>
 
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuLabel className="truncate">
+                    {name || "User"}
+                  </DropdownMenuLabel>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem onClick={logout} className="text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <button
               onClick={toggleTheme}
               aria-label="Toggle theme"
@@ -101,103 +164,22 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="flex items-center gap-2 sm:hidden">
-            <button
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-              className="rounded-md border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
-            >
-              {themeLabel}
-            </button>
-            <button
-              onClick={() => setMenuOpen((open) => !open)}
-              className="rounded-md p-2 text-gray-700 dark:text-gray-300"
-              aria-label="Toggle menu"
-            >
-              <svg
-                className="h-6 w-6"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {menuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
-          </div>
+          <MobileNavbar
+            open={open}
+            setOpen={setOpen}
+            totalItems={totalItems}
+            logedIn={logedIn}
+            logout={logout}
+            name={name}
+            initial={initial}
+            toggleTheme={toggleTheme}
+            themeLabel={themeLabel}
+            mobileNavLinkClass={mobileNavLinkClass}
+          />
         </div>
-
-        {menuOpen && (
-          <div className="mt-2 rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900 sm:hidden">
-            <div className="flex flex-col gap-1">
-              <NavLink
-                to="/products"
-                className={mobileNavLinkClass}
-                onClick={() => setMenuOpen(false)}
-              >
-                Products
-              </NavLink>
-
-              <Link
-                to="/cart"
-                className="flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                onClick={() => setMenuOpen(false)}
-              >
-                <span>Cart</span>
-                {totalItems > 0 && (
-                  <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo-600 px-1 text-xs text-white">
-                    {totalItems}
-                  </span>
-                )}
-              </Link>
-
-              {logedIn ? (
-                <>
-                  <p className="truncate px-2 pt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {name || "User"}
-                  </p>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setMenuOpen(false);
-                    }}
-                    className="rounded-md px-2 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <div className="px-2 py-2 text-sm text-gray-700 dark:text-gray-300">
-                  <Link to="/Login" onClick={() => setMenuOpen(false)}>
-                    Login
-                  </Link>
-                  <span> / </span>
-                  <Link to="/Signup" onClick={() => setMenuOpen(false)}>
-                    Signup
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );
 };
 
 export default Navbar;
-

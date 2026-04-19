@@ -2,12 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import type { Product } from "../types/product";
 import type { CartItem } from "../types/cart";
 import { getCartFromStorage, saveCartToStorage } from "../utils/storage";
+import { getAccessToken } from "@/lib/auth";
 import { useAuth } from "./useAuth";
 
 const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://shopzen-backend-production.up.railway.app";
-const ACCESS_TOKEN_KEY = "accessToken";
+  import.meta.env.VITE_API_URL || "https://shopzen-backend.onrender.com";
 
 type CartApiItem = {
   productId?: string | number;
@@ -49,8 +48,24 @@ export const useCart = () => {
   const [cart, setCart] = useState<CartItem[]>(() => getCartFromStorage());
   const [serverTotalPrice, setServerTotalPrice] = useState<number | null>(null);
 
+  // helper that aborts a fetch if it doesn't complete within `ms` milliseconds
+  const fetchWithTimeout = async (
+    input: RequestInfo,
+    init: RequestInit = {},
+    ms = 10000,
+  ): Promise<Response> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), ms);
+    try {
+      const res = await fetch(input, { ...init, signal: controller.signal });
+      return res;
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
   const hydrateCart = useCallback(async () => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const token = getAccessToken();
     if (!logedIn || !token) {
       setServerTotalPrice(null);
       setCart(getCartFromStorage());
@@ -58,7 +73,7 @@ export const useCart = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/cart`, {
+      const res = await fetchWithTimeout(`${API_URL}/api/v1/cart`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -93,11 +108,11 @@ export const useCart = () => {
     void hydrateCart();
   }, [hydrateCart]);
 
-  const addToCart = async (product: Product) => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+  const addToCart = async (product: Product): Promise<boolean> => {
+    const token = getAccessToken();
     if (logedIn && token) {
       try {
-        const res = await fetch(`${API_URL}/api/v1/cart/items`, {
+        const res = await fetchWithTimeout(`${API_URL}/api/v1/cart/items`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -110,14 +125,15 @@ export const useCart = () => {
         });
 
         if (!res.ok) {
-          return;
+          return false;
         }
 
         await hydrateCart();
       } catch {
-        // no-op
+        // no-op; if the request timed out/failed the button will be re-enabled
+        return false;
       }
-      return;
+      return true;
     }
 
     setServerTotalPrice(null);
@@ -134,10 +150,11 @@ export const useCart = () => {
       saveCartToStorage(nextCart);
       return nextCart;
     });
+    return true;
   };
 
   const removeFromCart = async (id: string | number) => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const token = getAccessToken();
     if (logedIn && token) {
       try {
         const res = await fetch(`${API_URL}/api/v1/cart/items`, {
@@ -173,7 +190,7 @@ export const useCart = () => {
   const updateQuantity = async (id: string | number, qty: number) => {
     if (qty < 1) return;
 
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const token = getAccessToken();
     if (logedIn && token) {
       try {
         const res = await fetch(`${API_URL}/api/v1/cart/items`, {
@@ -210,7 +227,7 @@ export const useCart = () => {
   };
 
   const clearCart = async () => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const token = getAccessToken();
     if (logedIn && token) {
       try {
         const res = await fetch(`${API_URL}/api/v1/cart`, {

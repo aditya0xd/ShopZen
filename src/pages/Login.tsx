@@ -24,6 +24,9 @@ function Login() {
   const navigator = useNavigate();
   const [newUser, setNewUser] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
+  const [rememberMe, setRememberMe] = useState<boolean>(
+    () => localStorage.getItem("rememberMe") === "true",
+  );
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,7 +39,7 @@ function Login() {
     const payload = { email, password };
     const API_URL =
       import.meta.env.VITE_API_URL ||
-      "https://shopzen-backend-production.up.railway.app";
+      "https://shopzen-backend.onrender.com";
 
     try {
       const res = await fetch(`${API_URL}/api/v1/auth/login`, {
@@ -67,7 +70,7 @@ function Login() {
         return;
       }
 
-      auth.login(token, name);
+      auth.login(token, name, rememberMe);
 
       setStatus(data.message || "Login successful");
       setNewUser(false);
@@ -120,6 +123,18 @@ function Login() {
             />
           </div>
 
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-400 text-blue-600 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              Remember me
+            </span>
+          </label>
+
           <button
             type="submit"
             className="mt-2 border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors duration-200"
@@ -136,14 +151,14 @@ function Login() {
           </p>
         )}
 
-        {newUser && (
+        {
           <p className="mt-2 text-center text-gray-700 dark:text-gray-300">
             Don't have an account?{" "}
             <Link to="/signup" className="text-blue-600 hover:underline">
               Sign up
             </Link>
           </p>
-        )}
+        }
       </div>
     </div>
   );
